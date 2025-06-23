@@ -3,14 +3,20 @@ from ultralytics import YOLO
 import cv2
 
 def run_detection(video_path, model_path, device='cpu'):
-    model = YOLO(model_path)
+    if device == 'cuda' and torch.cuda.is_available():
+        model = YOLO(model_path).to('cuda')
+    else:
+        model = YOLO(model_path)
     cap = cv2.VideoCapture(video_path)
     detections = []
 
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret: break
-        results = model(frame)[0]
+        if device == 'cuda' and torch.cuda.is_available():
+            results = model(frame, device='cuda')[0]
+        else:
+            results = model(frame)[0]
 
         frame_detections = []
         for box in results.boxes:
