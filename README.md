@@ -59,7 +59,7 @@ $ pip install -r requirements.txt
 $ python main.py
 ```
 
-A results file such as `output/crossviewid_results_20250623_123456.json` will be written automatically.
+A results file such as `output/crossviewid_results_20250623_123456.json` will be written automatically in the output folder.
 
 ### Running on CPU only
 The script auto-detects CUDA. If no GPU is available it will fall back to CPU (consider lowering video resolution or length).
