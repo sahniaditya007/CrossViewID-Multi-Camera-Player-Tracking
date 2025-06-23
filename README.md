@@ -41,8 +41,8 @@ Multi Camera Player Tracking
 ## 4. Installation
 ```bash
 # 1. Clone the repo
-$ git clone https://github.com/sahniaditya007/Multi-Camera-Player-Tracking.git
-$ cd Multi-Camera-Player-Tracking
+$ git clone https://github.com/sahniaditya007/CrossViewID-Multi-Camera-Player-Tracking.git
+$ cd CrossViewID-Multi-Camera-Player-Tracking
 
 # 2. Create and activate a virtual environment (recommended)
 $ python -m venv .venv
