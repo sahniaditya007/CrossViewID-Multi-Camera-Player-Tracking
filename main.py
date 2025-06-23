@@ -36,7 +36,7 @@ def check_requirements():
         for file in missing_files:
             logger.error(f"  - {file}")
         return False
-    logger.info("All required files found ✓")
+    logger.info("All required files found")
     return True
 
 def setup_environment():
@@ -104,19 +104,19 @@ def run_matching_pipeline(broadcast_tracks, tacticam_tracks, config):
 
 def display_results(broadcast_tracks, tacticam_tracks, player_mapping):
     print("\n" + "=" * 60)
-    print("🎯 CROSSVIEWID RESULTS")
+    print("CROSSVIEWID RESULTS")
     print("=" * 60)
-    print(f"📹 Broadcast video: {len(broadcast_tracks)} player tracks")
-    print(f"📹 Tacticam video: {len(tacticam_tracks)} player tracks")
-    print(f"🔗 Cross-camera matches: {len(player_mapping)}")
+    print(f"Broadcast video: {len(broadcast_tracks)} player tracks")
+    print(f"Tacticam video: {len(tacticam_tracks)} player tracks")
+    print(f"Cross-camera matches: {len(player_mapping)}")
     if player_mapping:
-        print("\n🔀 Player ID Mapping:")
+        print("\n Player ID Mapping:")
         for tacticam_id, broadcast_id in sorted(player_mapping.items()):
             print(f"   Tacticam #{tacticam_id} → Broadcast #{broadcast_id}")
         match_rate = len(player_mapping) / len(tacticam_tracks) * 100
         print(f"\n📊 Match rate: {match_rate:.1f}%")
     else:
-        print("\n⚠️  No cross-camera matches found")
+        print("\n  No cross-camera matches found")
         print("   This could be due to:")
         print("   - Different time segments in videos")
         print("   - Large camera angle differences")
@@ -150,7 +150,7 @@ def save_results(broadcast_tracks, tacticam_tracks, player_mapping, config):
 
 def main():
     try:
-        print("🚀 Starting CrossViewID Multi-Camera Player Tracking")
+        print("Starting CrossViewID Multi-Camera Player Tracking")
         print("=" * 60)
         if not check_requirements():
             logger.warning("Proceeding in dummy mode: required assets are missing. Generating empty results JSON.")
@@ -171,13 +171,13 @@ def main():
         )
         display_results(broadcast_tracks, tacticam_tracks, player_mapping)
         save_results(broadcast_tracks, tacticam_tracks, player_mapping, config)
-        logger.info("✅ CrossViewID completed successfully!")
+        logger.info("CrossViewID completed successfully!")
         return 0
     except KeyboardInterrupt:
-        logger.info("\n⚠️  Execution interrupted by user")
+        logger.info("\n  Execution interrupted by user")
         return 1
     except Exception as e:
-        logger.error(f"❌ Error during execution: {e}")
+        logger.error(f" Error during execution: {e}")
         import traceback
         logger.debug(traceback.format_exc())
         return 1

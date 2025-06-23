@@ -1,6 +1,5 @@
 torch>=2.0.0
+numpy
+scipy
 opencv-python
 ultralytics
-numpy
-# optional (for development)
-jupyter
