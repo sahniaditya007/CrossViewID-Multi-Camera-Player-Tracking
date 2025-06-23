@@ -1,0 +1,21 @@
+{
+  "timestamp": "20250623_174848",
+  "config": {
+    "device": "cpu",
+    "model_path": "models\\best.pt",
+    "broadcast_video": "data\\broadcast.mp4",
+    "tacticam_video": "data\\tacticam.mp4"
+  },
+  "statistics": {
+    "broadcast_tracks": 41,
+    "tacticam_tracks": 74,
+    "matched_players": 4,
+    "match_rate": 0.05405405405405406
+  },
+  "player_mapping": {
+    "4": 90,
+    "6": 16,
+    "0": 49,
+    "2": 75
+  }
+}

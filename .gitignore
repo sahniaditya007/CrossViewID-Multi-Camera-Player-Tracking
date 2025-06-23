@@ -1,2 +1,6 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.vscode/
 *venv
 utils/__pycache__/
