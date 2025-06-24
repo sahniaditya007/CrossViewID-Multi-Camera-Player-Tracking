@@ -6,9 +6,6 @@ CrossViewID is a lightweight, end-to-end pipeline for automatically detecting, t
 * **Hardware-aware** – will seamlessly use CUDA if available, otherwise falls back to CPU execution.
 * **Easy to run** – a single `python main.py` launches the complete workflow and produces a self-contained JSON report.
 
-<p align="center">
-  <img src="docs/sample_pipeline.png" width="720" alt="Cross-camera tracking pipeline"/>
-</p>
 
 ---
 
@@ -145,34 +142,4 @@ The exported JSON contains:
 * Plug-in hooks for **deep re-identification**.
 * Optional **GUI / stream visualiser**.
 
-Contributions are welcome – see below!
-
 ---
-
-## Contributing
-
-1. Fork the repo and create your branch: `git checkout -b feature/awesome`.
-2. Commit your changes: `git commit -m 'Add awesome feature'`.
-3. Push to the branch: `git push origin feature/awesome`.
-4. Open a pull request.
-
-Please format code with `black` and ensure new tests pass.
-
----
-
-## License
-
-This project is released under the MIT License – see the [LICENSE](LICENSE) file for details.
-
----
-
-## Acknowledgements
-
-* Ultralytics YOLO-v8 \- <https://github.com/ultralytics/ultralytics>
-* NumPy, SciPy, OpenCV and PyTorch projects.
-
----
-
-## Contact
-
-For questions or commercial licensing, please open an issue or email **your.email@example.com**.
