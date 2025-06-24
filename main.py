@@ -1,3 +1,20 @@
+"""
+main.py
+
+Main entry point for CrossViewID Multi-Camera Player Tracking.
+
+This script orchestrates the detection, tracking, and cross-view matching of players in synchronized sports videos (e.g., broadcast and tacticam). It loads the YOLO model, runs detection on both videos, tracks players in each view, matches players across views, and saves the results to a JSON file.
+
+Functions:
+    check_requirements: Ensure all required model and video files are present.
+    setup_environment: Prepare output directory and device configuration.
+    run_detection_pipeline: Run player detection on both videos.
+    run_tracking_pipeline: Track players in each video.
+    run_matching_pipeline: Match player tracks across camera views.
+    display_results: Print summary of results to the console.
+    save_results: Save results and statistics to a JSON file.
+    main: Main workflow for the pipeline.
+"""
 import sys
 import os
 from pathlib import Path
@@ -22,6 +39,12 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def check_requirements():
+    """
+    Check for the presence of required model and video files.
+
+    Returns:
+        bool: True if all required files are present, False otherwise.
+    """
     required_files = {
         str(MODEL_DIR / 'best.pt'): 'YOLO model file',
         str(DATA_DIR / 'broadcast.mp4'): 'Broadcast video file',
@@ -40,6 +63,12 @@ def check_requirements():
     return True
 
 def setup_environment():
+    """
+    Set up output directory and device configuration.
+
+    Returns:
+        dict: Configuration dictionary with paths and device info.
+    """
     output_dir = Path("output")
     output_dir.mkdir(exist_ok=True)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -56,6 +85,14 @@ def setup_environment():
     return config
 
 def run_detection_pipeline(config):
+    """
+    Run player detection on both broadcast and tacticam videos.
+
+    Args:
+        config (dict): Configuration dictionary.
+    Returns:
+        Tuple[List[List[dict]], List[List[dict]]]: Detections for both videos.
+    """
     logger.info("=== DETECTION PHASE ===")
     logger.info("Processing broadcast video...")
     broadcast_detections = run_detection(
@@ -76,6 +113,16 @@ def run_detection_pipeline(config):
     return broadcast_detections, tacticam_detections
 
 def run_tracking_pipeline(broadcast_detections, tacticam_detections, config):
+    """
+    Track players in both broadcast and tacticam videos.
+
+    Args:
+        broadcast_detections (List[List[dict]]): Detections for broadcast video.
+        tacticam_detections (List[List[dict]]): Detections for tacticam video.
+        config (dict): Configuration dictionary.
+    Returns:
+        Tuple[dict, dict]: Valid tracks for both videos.
+    """
     logger.info("=== TRACKING PHASE ===")
     logger.info("Tracking players in broadcast video...")
     broadcast_tracks = track_players(
@@ -92,6 +139,16 @@ def run_tracking_pipeline(broadcast_detections, tacticam_detections, config):
     return broadcast_tracks, tacticam_tracks
 
 def run_matching_pipeline(broadcast_tracks, tacticam_tracks, config):
+    """
+    Match player tracks across broadcast and tacticam views.
+
+    Args:
+        broadcast_tracks (dict): Tracks from broadcast video.
+        tacticam_tracks (dict): Tracks from tacticam video.
+        config (dict): Configuration dictionary.
+    Returns:
+        dict: Mapping from tacticam track IDs to broadcast track IDs.
+    """
     logger.info("=== MATCHING PHASE ===")
     logger.info("Matching players across camera views...")
     player_mapping = match_players_across_views(
@@ -103,6 +160,14 @@ def run_matching_pipeline(broadcast_tracks, tacticam_tracks, config):
     return player_mapping
 
 def display_results(broadcast_tracks, tacticam_tracks, player_mapping):
+    """
+    Print a summary of the results to the console.
+
+    Args:
+        broadcast_tracks (dict): Tracks from broadcast video.
+        tacticam_tracks (dict): Tracks from tacticam video.
+        player_mapping (dict): Mapping from tacticam to broadcast track IDs.
+    """
     print("\n" + "=" * 60)
     print("CROSSVIEWID RESULTS")
     print("=" * 60)
@@ -124,6 +189,15 @@ def display_results(broadcast_tracks, tacticam_tracks, player_mapping):
     print("\n" + "=" * 60)
 
 def save_results(broadcast_tracks, tacticam_tracks, player_mapping, config):
+    """
+    Save results and statistics to a JSON file in the output directory.
+
+    Args:
+        broadcast_tracks (dict): Tracks from broadcast video.
+        tacticam_tracks (dict): Tracks from tacticam video.
+        player_mapping (dict): Mapping from tacticam to broadcast track IDs.
+        config (dict): Configuration dictionary.
+    """
     import json
     output_dir = config['output_dir']
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -149,6 +223,12 @@ def save_results(broadcast_tracks, tacticam_tracks, player_mapping, config):
     logger.info(f"Results saved to: {output_file}")
 
 def main():
+    """
+    Main workflow for CrossViewID pipeline: detection, tracking, matching, and saving results.
+
+    Returns:
+        int: Exit code (0 for success, 1 for error/interruption).
+    """
     try:
         print("Starting CrossViewID Multi-Camera Player Tracking")
         print("=" * 60)

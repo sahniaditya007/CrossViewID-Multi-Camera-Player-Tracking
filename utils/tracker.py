@@ -1,3 +1,18 @@
+"""
+tracker.py
+
+Player tracking utilities for associating detections across video frames.
+
+This module provides the PlayerTracker class for tracking player detections across frames using IoU-based association. It includes utilities for updating tracks, filtering valid tracks, and running tracking on a sequence of detections.
+
+Functions:
+    calculate_iou: Compute the Intersection over Union (IoU) between two bounding boxes.
+    track_players: Convenience function to run tracking on a list of detections.
+
+Classes:
+    PlayerTracker: Tracks player detections across frames using IoU and configurable thresholds.
+"""
+
 import numpy as np
 import torch
 from typing import List, Dict, Any, Tuple
@@ -9,6 +24,16 @@ logger = logging.getLogger(__name__)
 def calculate_iou(bbox1: Tuple[int, int, int, int], 
                  bbox2: Tuple[int, int, int, int],
                  device: str = 'cpu') -> float:
+    """
+    Calculate the Intersection over Union (IoU) between two bounding boxes.
+
+    Args:
+        bbox1 (Tuple[int, int, int, int]): First bounding box (x1, y1, x2, y2).
+        bbox2 (Tuple[int, int, int, int]): Second bounding box (x1, y1, x2, y2).
+        device (str): 'cpu' or 'cuda'. Defaults to 'cpu'.
+    Returns:
+        float: IoU value between 0 and 1.
+    """
     if device == 'cuda' and torch.cuda.is_available():
         bb1 = torch.tensor(bbox1, dtype=torch.float32, device='cuda')
         bb2 = torch.tensor(bbox2, dtype=torch.float32, device='cuda')
@@ -33,11 +58,23 @@ def calculate_iou(bbox1: Tuple[int, int, int, int],
         return inter_area / union_area if union_area > 0 else 0.0
 
 class PlayerTracker:
+    """
+    Tracks player detections across video frames using IoU-based association.
+
+    Args:
+        iou_threshold (float): Minimum IoU required to associate a detection with an existing track.
+        max_lost_frames (int): Maximum number of frames a track can be lost before removal.
+        min_track_length (int): Minimum number of frames for a track to be considered valid.
+        device (str): 'cpu' or 'cuda'.
+    """
     def __init__(self, 
                  iou_threshold: float = 0.5,
                  max_lost_frames: int = 10,
                  min_track_length: int = 5,
                  device: str = 'cpu'):
+        """
+        Initialize the PlayerTracker.
+        """
         self.iou_threshold = iou_threshold
         self.max_lost_frames = max_lost_frames
         self.min_track_length = min_track_length
@@ -48,6 +85,15 @@ class PlayerTracker:
 
     def _find_best_match(self, detection: Dict[str, Any], 
                         frame_idx: int) -> Tuple[int, float]:
+        """
+        Find the best matching track for a detection based on IoU.
+
+        Args:
+            detection (Dict[str, Any]): Detection dictionary with 'bbox'.
+            frame_idx (int): Current frame index.
+        Returns:
+            Tuple[int, float]: (Best matching track ID or None, IoU score).
+        """
         best_iou = 0.0
         best_track_id = None
         for track_id, track in self.tracks.items():
@@ -63,6 +109,15 @@ class PlayerTracker:
 
     def _create_new_track(self, detection: Dict[str, Any], 
                          frame_idx: int) -> int:
+        """
+        Create a new track for an unmatched detection.
+
+        Args:
+            detection (Dict[str, Any]): Detection dictionary with 'bbox'.
+            frame_idx (int): Current frame index.
+        Returns:
+            int: New track ID.
+        """
         track_id = self.next_id
         self.tracks[track_id] = {
             'bbox': detection['bbox'],
@@ -75,6 +130,14 @@ class PlayerTracker:
 
     def _update_track(self, track_id: int, detection: Dict[str, Any], 
                      frame_idx: int) -> None:
+        """
+        Update an existing track with a new detection.
+
+        Args:
+            track_id (int): Track ID to update.
+            detection (Dict[str, Any]): Detection dictionary.
+            frame_idx (int): Current frame index.
+        """
         track = self.tracks[track_id]
         track['bbox'] = detection['bbox']
         track['last_seen'] = frame_idx
@@ -83,6 +146,15 @@ class PlayerTracker:
 
     def update(self, detections: List[Dict[str, Any]], 
               frame_idx: int) -> Dict[int, Dict[str, Any]]:
+        """
+        Update the tracker with detections for a single frame.
+
+        Args:
+            detections (List[Dict[str, Any]]): List of detections for the frame.
+            frame_idx (int): Current frame index.
+        Returns:
+            Dict[int, Dict[str, Any]]: Updated tracks.
+        """
         matched_tracks = set()
         for detection in detections:
             track_id, iou_score = self._find_best_match(detection, frame_idx)
@@ -94,6 +166,14 @@ class PlayerTracker:
         return self.tracks
 
     def get_active_tracks(self, frame_idx: int) -> Dict[int, Dict[str, Any]]:
+        """
+        Get tracks that are currently active (not lost for too many frames).
+
+        Args:
+            frame_idx (int): Current frame index.
+        Returns:
+            Dict[int, Dict[str, Any]]: Active tracks.
+        """
         active_tracks = {}
         for track_id, track in self.tracks.items():
             if frame_idx - track['last_seen'] <= self.max_lost_frames:
@@ -101,6 +181,12 @@ class PlayerTracker:
         return active_tracks
 
     def get_valid_tracks(self) -> Dict[int, Dict[str, Any]]:
+        """
+        Get tracks that are considered valid (long enough).
+
+        Returns:
+            Dict[int, Dict[str, Any]]: Valid tracks.
+        """
         valid_tracks = {}
         for track_id, track in self.tracks.items():
             if len(track['track']) >= self.min_track_length:
@@ -109,6 +195,15 @@ class PlayerTracker:
 
     def track_video(self, detections: List[List[Dict[str, Any]]], 
                    progress_interval: int = 50) -> Dict[int, Dict[str, Any]]:
+        """
+        Run tracking on a sequence of detections for all frames in a video.
+
+        Args:
+            detections (List[List[Dict[str, Any]]]): List of detections for each frame.
+            progress_interval (int): Interval for logging progress. Defaults to 50.
+        Returns:
+            Dict[int, Dict[str, Any]]: Valid tracks after tracking.
+        """
         total_detections = sum(len(frame) for frame in detections)
         logger.info(f"Tracking players across {len(detections)} frames...")
         logger.info(f"Total detections: {total_detections}")
@@ -127,6 +222,18 @@ def track_players(detections: List[List[Dict[str, Any]]],
                  max_lost_frames: int = 10,
                  min_track_length: int = 5,
                  device: str = 'cpu') -> Dict[int, Dict[str, Any]]:
+    """
+    Convenience function to run player tracking on a list of detections.
+
+    Args:
+        detections (List[List[Dict[str, Any]]]): List of detections for each frame.
+        iou_threshold (float): Minimum IoU required to associate a detection with an existing track.
+        max_lost_frames (int): Maximum number of frames a track can be lost before removal.
+        min_track_length (int): Minimum number of frames for a track to be considered valid.
+        device (str): 'cpu' or 'cuda'.
+    Returns:
+        Dict[int, Dict[str, Any]]: Valid tracks after tracking.
+    """
     tracker = PlayerTracker(
         iou_threshold=iou_threshold,
         max_lost_frames=max_lost_frames,
